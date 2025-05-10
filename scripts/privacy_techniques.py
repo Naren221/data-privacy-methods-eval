@@ -528,10 +528,10 @@ def visualize_comparison(comparison, sensitive_attributes):
                 f'{height:.2f}', ha='center', va='bottom')
     
     plt.tight_layout()
-    plt.savefig('privacy_comparison_with_risk.png')
+    plt.savefig('./images/privacy_comparison_with_risk.png')
     plt.close()
     
-    return 'privacy_comparison_with_risk.png'
+    return './images/privacy_comparison_with_risk.png'
 
 def analyze_equivalence_classes(df, quasi_identifiers, sensitive_attributes):
     """
@@ -654,8 +654,8 @@ def main():
     print(f"\nComparison visualization saved to {visualization_path}")
     
     # Save anonymized datasets if needed
-    k_anonymized_df.to_csv("k_anonymized_data.csv", index=False)
-    l_diversified_df.to_csv("l_diversified_data.csv", index=False)
+    k_anonymized_df.to_csv("./output/k_anonymized_data.csv", index=False)
+    l_diversified_df.to_csv("./output/l_diversified_data.csv", index=False)
     
     return k_anonymized_df, l_diversified_df, comparison
 

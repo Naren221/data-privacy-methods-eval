@@ -377,7 +377,7 @@ def main():
                 print(f"{key}: {value}")
         
         # Save the anonymized dataset
-        dp_anonymized.to_csv("dp_anonymized_data.csv", index=False)
+        dp_anonymized.to_csv("./output/dp_anonymized_data.csv", index=False)
         print(f"Anonymized data saved to dp_anonymized_data.csv")
         
         print("\nTry different epsilon values to explore privacy-utility tradeoffs:")
