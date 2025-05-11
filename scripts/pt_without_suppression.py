@@ -107,12 +107,12 @@ class KAnonymizer:
     
     def fit_transform(self, df, quasi_identifiers, generalization_rules=None):
         """
-        Apply K-anonymity to the dataset
+        Apply K-anonymity generalization without suppressing records.
         """
         self.original_data = df.copy()
         df_anonymized = df.copy()
-        
-        # Apply generalization based on rules if provided
+
+        # Apply generalization rules
         if generalization_rules:
             for col, rule in generalization_rules.items():
                 if col in df_anonymized.columns:
@@ -122,35 +122,29 @@ class KAnonymizer:
                     elif col == 'balance':
                         df_anonymized[col] = df_anonymized[col].apply(lambda x: generalize_balance(x, rule))
                         self.generalized_columns.add(col)
-                    elif isinstance(rule, dict):  # For categorical mappings
+                    elif isinstance(rule, dict):
                         df_anonymized[col] = df_anonymized[col].apply(lambda x: generalize_categorical(x, rule))
                         self.generalized_columns.add(col)
-        
-        # Check if each equivalence class satisfies k-anonymity
+
+        # Group by QIs and check for violations
         self.equivalence_classes = df_anonymized.groupby(quasi_identifiers)
         equivalence_class_sizes = self.equivalence_classes.size()
-        
-        # Identify records that violate k-anonymity
         violating_classes = equivalence_class_sizes[equivalence_class_sizes < self.k].index.tolist()
-        
-        # Suppress records that violate k-anonymity
+
+        # Count violating records but do not suppress
         if violating_classes:
-            mask = df_anonymized[quasi_identifiers].apply(tuple, axis=1).isin([tuple(x) for x in violating_classes])
+            mask = df_anonymized[quasi_identifiers].apply(tuple, axis=1).isin(violating_classes)
             self.suppressed_records = mask.sum()
-            print(f"Suppressing {self.suppressed_records} records to satisfy {self.k}-anonymity")
-            df_anonymized = df_anonymized[~mask]
-        
+            print(f"⚠️ {self.suppressed_records} records would be suppressed to satisfy {self.k}-anonymity (but were kept)")
+
         self.anonymized_data = df_anonymized
-        
-        # Calculate stats
         self.total_records = len(df)
         self.remaining_records = len(df_anonymized)
         self.equivalence_class_count = len(df_anonymized.groupby(quasi_identifiers))
-        
-        # Calculate reidentification risk
         self.reidentification_risk = self.calculate_reidentification_risk(df_anonymized, quasi_identifiers)
-        
+
         return df_anonymized
+
     
     def calculate_reidentification_risk(self, df, quasi_identifiers):
         """
@@ -245,7 +239,7 @@ class LDiversifier:
             mask = df_anonymized[quasi_identifiers].apply(tuple, axis=1).isin([tuple(x) if isinstance(x, (list, np.ndarray)) else (x,) for x in violating_groups])
             self.suppressed_records = mask.sum()
             print(f"Suppressing {self.suppressed_records} records to satisfy {self.l}-diversity")
-            df_anonymized = df_anonymized[~mask]
+            # df_anonymized = df_anonymized[~mask]
         
         self.anonymized_data = df_anonymized
         
